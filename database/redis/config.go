@@ -1,5 +1,7 @@
 package redis
 
+import "time"
+
 // Config - Redis database connection config
 type Config struct {
 	MasterName        string
@@ -8,4 +10,5 @@ type Config struct {
 	Port              string
 	DB                int
 	ConnectionLimit   int
+	MetricsTTL        time.Duration
 }

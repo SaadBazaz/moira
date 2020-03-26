@@ -30,6 +30,9 @@ type RedisConfig struct {
 	// Redis database
 	DB              int `yaml:"dbid"`
 	ConnectionLimit int `yaml:"connection_limit"`
+	// Moira will delete metrics older than this value from Redis. Large values will lead to various problems everywhere.
+	// See https://github.com/moira-alert/moira/pull/519
+	MetricsTTL string `yaml:"metrics_ttl"`
 }
 
 // GetSettings returns redis config parsed from moira config files
@@ -41,6 +44,7 @@ func (config *RedisConfig) GetSettings() redis.Config {
 		Port:              config.Port,
 		DB:                config.DB,
 		ConnectionLimit:   config.ConnectionLimit,
+		MetricsTTL:        to.Duration(config.MetricsTTL),
 	}
 }
 
@@ -93,6 +97,10 @@ type RemoteConfig struct {
 	URL string `yaml:"url"`
 	// Min period to perform triggers re-check. Note: Reducing of this value leads to increasing of CPU and memory usage values
 	CheckInterval string `yaml:"check_interval"`
+	// Moira won't fetch metrics older than this value from remote storage. Note that Moira doesn't delete old data from
+	// remote storage. Large values will lead to OOM problems in checker.
+	// See https://github.com/moira-alert/moira/pull/519
+	MetricsTTL string `yaml:"metrics_ttl"`
 	// Timeout for remote requests
 	Timeout string `yaml:"timeout"`
 	// Username for basic auth
@@ -113,6 +121,7 @@ func (config *RemoteConfig) GetRemoteSourceSettings() *remoteSource.Config {
 	return &remoteSource.Config{
 		URL:           config.URL,
 		CheckInterval: to.Duration(config.CheckInterval),
+		MetricsTTL:    to.Duration(config.MetricsTTL),
 		Timeout:       to.Duration(config.Timeout),
 		User:          config.User,
 		Password:      config.Password,
